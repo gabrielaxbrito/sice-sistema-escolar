@@ -17,3 +17,10 @@ button:hover, .dashboard-link:hover { background: #123b75; }
 .status { margin: 18px 0 0; font-size: 12px; }
 .dashboard-link { position: fixed; bottom: 24px; right: 24px; padding: 15px 20px; text-decoration: none; display: flex; align-items: center; gap: 16px; box-shadow: 0 6px 20px #07224f20; }
 @media (max-width: 480px) { .login-card { padding: 28px 24px; } .dashboard-link { right: 16px; bottom: 16px; } }
+input { min-width: 0; font-size: 16px; }
+.dashboard-link { max-width: calc(100% - 32px); bottom: max(16px, env(safe-area-inset-bottom)); }
+@media (max-height: 600px) {
+  body { display: flex; flex-direction: column; justify-content: flex-start; gap: 24px; padding: 24px 16px; }
+  .login-card { flex-shrink: 0; }
+  .dashboard-link { position: static; align-self: flex-end; flex-shrink: 0; }
+}
