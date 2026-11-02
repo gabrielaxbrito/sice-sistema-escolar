@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -26,7 +26,7 @@
         <h3 class="text-[11px] font-bold tracking-[2px] text-gray-500 uppercase px-6 mb-5">Módulos principais</h3>
         <ul class="space-y-1">
           <li>
-            <a href="#" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200">
+            <a href="DASHBOARD.HTML" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200">
               <i class="fa-solid fa-table-columns w-5"></i><span>Dashboard</span>
             </a>
           </li>
@@ -38,9 +38,7 @@
           <li><a href="CURSOS.HTML" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200"><i class="fa-solid fa-graduation-cap w-5"></i><span>Cursos</span></a></li>
           <li><a href="TURMAS.HTML" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200"><i class="fa-solid fa-chalkboard w-5"></i><span>Turmas</span></a></li>
           <li>
-            <a href="#" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200">
-              <i class="fa-regular fa-folder w-5"></i><span>Processos Acadêmicos</span>
-            </a>
+            <span aria-disabled="true" title="Em breve" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-400 cursor-not-allowed"><i class="fa-regular fa-folder w-5"></i><span>Processos Acadêmicos</span><span class="text-[10px]">Em breve</span></span>
           </li>
           <li>
             <a href="DOCUMENTOS.HTML" class="flex items-center gap-3 px-6 py-3 text-sm bg-gray-100 text-black font-semibold border-r-4 border-[#07224f]">
@@ -53,7 +51,7 @@
             </a>
           </li>
           <li>
-            <a href="#" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200">
+            <a href="PROFESSORES.HTML" class="flex items-center gap-3 px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 duration-200">
               <i class="fa-solid fa-users w-5"></i><span>Professores</span>
             </a>
           </li>
@@ -67,10 +65,10 @@
     </div>
     <div class="border-t border-gray-200 p-6">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-[#07224f] text-white flex items-center justify-center font-semibold">RC</div>
+        <div class="w-10 h-10 rounded-full bg-[#07224f] text-white flex items-center justify-center font-semibold">DEV</div>
         <div>
-          <h4 class="text-sm font-semibold">Renata Castro</h4>
-          <p class="text-xs text-gray-500">Coordenadora</p>
+          <h4 class="text-sm font-semibold">Desenvolvedor</h4>
+          <p class="text-xs text-gray-500">Desenvolvedor</p>
         </div>
       </div>
     </div>
@@ -111,7 +109,8 @@
           <h3 class="text-sm font-bold tracking-[2px] uppercase text-gray-500">Emissão imediata</h3>
           <div class="flex-1 h-px bg-gray-200"></div>
         </div>
-        <div id="gridEmissao" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <p class="text-sm text-gray-500 mb-5">Documentos em PDF com informações já cadastradas no sistema. Na janela de impressão, escolha Salvar como PDF.</p>
+        <div id="gridEmissao" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
           <button onclick="abrirModalDeclaracao('curso')"
             class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-start hover:border-[#07224f] hover:shadow-md duration-200 text-left">
@@ -123,6 +122,30 @@
             <p class="text-sm font-semibold text-gray-800 leading-tight">Declaração de Frequência</p>
           </button>
 
+          <button type="button" onclick="abrirModalDeclaracao('matricula')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Comprovante de Matrícula</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Comprovar que o aluno está matriculado na instituição.</span>
+          </button>
+          <button type="button" onclick="abrirModalDeclaracao('vinculo')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Declaração de Vínculo Escolar</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Confirmar que o aluno mantém vínculo ativo com a instituição.</span>
+          </button>
+          <button type="button" onclick="abrirModalDeclaracao('boletim')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Boletim de Notas</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Apresentar notas e resultados acadêmicos.</span>
+          </button>
+          <button type="button" onclick="abrirModalDeclaracao('historico')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Histórico de Frequência</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Detalhar presenças e faltas por período ou disciplina.</span>
+          </button>
+          <button type="button" onclick="abrirModalDeclaracao('grade')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Grade Horária Individual</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Mostrar dias, horários e disciplinas do aluno.</span>
+          </button>
+          <button type="button" onclick="abrirModalDeclaracao('modulo')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Comprovante de Conclusão de Módulo</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Confirmar a conclusão de uma etapa do curso, quando aplicável.</span>
+          </button>
         </div>
       </div>
 
@@ -132,13 +155,17 @@
           <h3 class="text-sm font-bold tracking-[2px] uppercase text-gray-500">Requer solicitação</h3>
           <div class="flex-1 h-px bg-gray-200"></div>
         </div>
-        <div id="gridSolicitacoes" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div id="gridSolicitacoes" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
           <button onclick="abrirModalCertificacao()"
             class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-start hover:border-[#07224f] hover:shadow-md duration-200 text-left">
             <p class="text-sm font-semibold text-gray-800 leading-tight">Certificado de Conclusão</p>
           </button>
 
+          <button type="button" onclick="abrirModalCertificacao('trancamento')" class="doc-card bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-start gap-3 hover:border-[#07224f] hover:shadow-md duration-200 text-left">
+            <p class="text-sm font-semibold text-gray-800 leading-tight">Declaração de Trancamento</p>
+            <span class="text-xs text-gray-500 leading-relaxed">Comprovar a suspensão temporária da matrícula.</span>
+          </button>
         </div>
       </div>
 
@@ -188,7 +215,7 @@
       <button onclick="fecharModalDeclaracao()" class="border border-gray-300 px-5 py-3 rounded-lg hover:bg-gray-50 text-sm">Cancelar</button>
       <button id="btnImprimir" onclick="imprimirDeclaracao()" disabled
         class="bg-[#07224f] text-white px-5 py-3 rounded-lg hover:opacity-90 text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
-        <i class="fa-solid fa-print"></i> Imprimir
+        <i class="fa-solid fa-file-pdf"></i> Gerar PDF
       </button>
     </div>
 
@@ -202,7 +229,7 @@
 
     <div class="flex items-start justify-between mb-5">
       <div>
-        <h2 class="text-2xl font-semibold mb-1">Certificado de Conclusão</h2>
+        <h2 id="tituloSolicitacao" class="text-2xl font-semibold mb-1">Certificado de Conclusão</h2>
         <p class="text-gray-500 text-sm">Este documento requer solicitação prévia.</p>
       </div>
       <button onclick="fecharModalCertificacao()" class="text-gray-400 hover:text-black text-lg w-8 h-8 flex items-center justify-center">✕</button>
@@ -210,7 +237,7 @@
 
     <div class="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-6 flex gap-3">
       <i class="fa-solid fa-triangle-exclamation text-yellow-500 mt-0.5 flex-shrink-0"></i>
-      <p class="text-sm text-yellow-800">O certificado não pode ser emitido diretamente. É necessário registrar uma solicitação, que será verificada pelo setor responsável antes da emissão.</p>
+      <p id="avisoSolicitacao" class="text-sm text-yellow-800">O certificado não pode ser emitido diretamente. É necessário registrar uma solicitação, que será verificada pelo setor responsável antes da emissão.</p>
     </div>
 
     <div class="space-y-4">
@@ -261,3 +288,4 @@
 <script src="../JS/DOCUMENTOS.JS"></script>
 </body>
 </html>
+

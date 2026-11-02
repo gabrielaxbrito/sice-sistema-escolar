@@ -3,14 +3,24 @@ const API = 'http://localhost:3000'
 let tipoDeclaracao       = null
 let alunoSelecionado     = null
 let alunoSelecionadoCert = null
+let tipoSolicitacao = 'certificado'
+const documentos = {
+  matricula: 'Comprovante de Matrícula',
+  vinculo: 'Declaração de Vínculo Escolar',
+  boletim: 'Boletim de Notas',
+  historico: 'Histórico de Frequência',
+  grade: 'Grade Horária Individual',
+  modulo: 'Comprovante de Conclusão de Módulo'
+}
+const escaparHTML = valor => String(valor ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 
 // BUSCA - FILTRO DOS CARDS
 
 document.getElementById('buscaInput').addEventListener('input', function () {
   const termo = this.value.toLowerCase()
   document.querySelectorAll('.doc-card').forEach(card => {
-    const nome = card.querySelector('p')?.textContent.toLowerCase() || ''
-    card.parentElement.style.display = nome.includes(termo) ? '' : 'none'
+    const nome = card.textContent.toLowerCase()
+    card.style.display = nome.includes(termo) ? '' : 'none'
   })
 })
 
@@ -21,9 +31,10 @@ function abrirModalDeclaracao(tipo) {
   alunoSelecionado = null
 
   // Atualiza título e label do campo conforme o tipo
-  const titulo = tipo === 'curso' ? 'Declaração de Curso' : 'Declaração de Frequência'
-  const label  = tipo === 'curso' ? 'ID do aluno' : 'ID da matrícula'
-  const placeholder = tipo === 'curso' ? 'Digite o ID do aluno...' : 'Digite o ID da matrícula...'
+  const porMatricula = ['frequencia', 'historico'].includes(tipo)
+  const titulo = documentos[tipo] || (tipo === 'curso' ? 'Declaração de Curso' : 'Declaração de Frequência')
+  const label = porMatricula ? 'ID da matrícula' : 'ID do aluno'
+  const placeholder = `Digite o ${label}...`
 
   document.getElementById('modalDeclaracaoTitulo').textContent  = titulo
   document.getElementById('labelIdDeclaracao').textContent      = label
@@ -31,6 +42,7 @@ function abrirModalDeclaracao(tipo) {
   document.getElementById('idDeclaracaoInput').value            = ''
 
   document.getElementById('erroIdDeclaracao').classList.add('hidden')
+  document.getElementById('erroIdDeclaracao').textContent = 'Não encontrado. Verifique o ID e tente novamente.'
   document.getElementById('alunoSelecionadoBox').classList.add('hidden')
   document.getElementById('btnImprimir').disabled = true
 
@@ -43,6 +55,7 @@ function abrirModalDeclaracao(tipo) {
 }
 
 function fecharModalDeclaracao() {
+  tipoDeclaracao = null
   const modal = document.getElementById('modalDeclaracao')
   modal.classList.add('hidden')
   modal.classList.remove('flex')
@@ -52,6 +65,7 @@ function fecharModalDeclaracao() {
 // BUSCAR (DECLARAÇÃO) — aluno ou matrícula conforme tipo
 
 async function buscarDeclaracao() {
+  const tipoBusca = tipoDeclaracao
   const id   = document.getElementById('idDeclaracaoInput').value.trim()
   const erro = document.getElementById('erroIdDeclaracao')
   const box  = document.getElementById('alunoSelecionadoBox')
@@ -59,6 +73,7 @@ async function buscarDeclaracao() {
   erro.classList.add('hidden')
   box.classList.add('hidden')
   document.getElementById('btnImprimir').disabled = true
+  alunoSelecionado = null
 
   if (!id) return
 
@@ -68,24 +83,31 @@ async function buscarDeclaracao() {
     let info    = ''
     let extra   = {}
 
-    if (tipoDeclaracao === 'curso') {
+    if (!['frequencia', 'historico'].includes(tipoBusca)) {
 
       // Busca pelo ID do aluno
-      const res  = await fetch(`${API}/alunos/${id}`)
-      if (!res.ok) throw new Error()
+      const res  = await fetch(`${API}/alunos/${encodeURIComponent(id)}`)
+      if (!res.ok) throw new Error('Aluno não encontrado ou consulta indisponível. Verifique o ID e tente novamente.')
       const data = await res.json()
 
       const matriculaAtiva = (data.matriculas || []).find(m => m.status === 'ativa')
       nome  = data.nome
       info  = matriculaAtiva?.turmas?.cursos?.nome || 'Curso não informado'
       extra = { ...data }
+      if (['matricula', 'vinculo'].includes(tipoBusca) && (!matriculaAtiva || !matriculaAtiva.turmas?.cursos?.nome || !data.nome)) {
+        throw new Error('É necessário ter uma matrícula ativa com curso informado para emitir este documento.')
+      }
+      if (tipoBusca === 'boletim') throw new Error('As notas e os resultados acadêmicos ainda não estão disponíveis no sistema.')
+      if (tipoBusca === 'modulo') throw new Error('O registro de conclusão de módulos ainda não está disponível no sistema.')
+      if (tipoBusca === 'grade') throw new Error('A grade individual com dias, horários e disciplinas ainda não está disponível para emissão.')
 
     } else {
 
       // Busca pelo ID da matrícula e já calcula frequência
-      const res  = await fetch(`${API}/matriculas/${id}/frequencia`)
-      if (!res.ok) throw new Error()
+      const res  = await fetch(`${API}/matriculas/${encodeURIComponent(id)}/frequencia`)
+      if (!res.ok) throw new Error('Matrícula não encontrada ou consulta indisponível. Verifique o ID e tente novamente.')
       const data = await res.json()
+      if (tipoBusca === 'historico' && !data.total_aulas) throw new Error('Não há registros de frequência para esta matrícula.')
 
       nome  = data.nome
       info  = `${data.curso || 'Curso não informado'} — ${data.frequencia}% de frequência`
@@ -96,6 +118,7 @@ async function buscarDeclaracao() {
 
     }
 
+    if (tipoBusca !== tipoDeclaracao || id !== document.getElementById('idDeclaracaoInput').value.trim()) return
     alunoSelecionado = extra
 
     document.getElementById('alunoSelecionadoNome').textContent = nome
@@ -103,7 +126,9 @@ async function buscarDeclaracao() {
     box.classList.remove('hidden')
     document.getElementById('btnImprimir').disabled = false
 
-  } catch {
+  } catch (error) {
+    if (tipoBusca !== tipoDeclaracao || id !== document.getElementById('idDeclaracaoInput').value.trim()) return
+    erro.textContent = error.message && error.message !== 'Failed to fetch' ? error.message : 'Não foi possível consultar os dados. Verifique o ID e a conexão com o servidor.'
     erro.classList.remove('hidden')
     alunoSelecionado = null
   }
@@ -111,6 +136,11 @@ async function buscarDeclaracao() {
 
 document.getElementById('idDeclaracaoInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') buscarDeclaracao()
+})
+document.getElementById('idDeclaracaoInput').addEventListener('input', () => {
+  alunoSelecionado = null
+  document.getElementById('btnImprimir').disabled = true
+  document.getElementById('alunoSelecionadoBox').classList.add('hidden')
 })
 
 // IMPRIMIR DECLARAÇÃO
@@ -126,11 +156,11 @@ function imprimirDeclaracao() {
   let titulo    = ''
   let conteudo  = ''
 
-  if (tipoDeclaracao === 'curso') {
+  if (['curso', 'matricula', 'vinculo'].includes(tipoDeclaracao)) {
     const matriculaAtiva = (data.matriculas || []).find(m => m.status === 'ativa')
-    nomeAluno = data.nome
-    cursoNome = matriculaAtiva?.turmas?.cursos?.nome || '___________________________'
-    titulo    = 'DECLARAÇÃO DE CURSO'
+    nomeAluno = escaparHTML(data.nome)
+    cursoNome = escaparHTML(matriculaAtiva?.turmas?.cursos?.nome || '___________________________')
+    titulo = (documentos[tipoDeclaracao] || 'Declaração de Curso').toUpperCase()
     conteudo  = `
       <p style="line-height: 2.2; text-align: justify;">
         Declaramos para os devidos fins que <strong>${nomeAluno}</strong>
@@ -142,9 +172,9 @@ function imprimirDeclaracao() {
       </p>
     `
   } else {
-    nomeAluno = data.nome
-    cursoNome = data.curso || '___________________________'
-    titulo    = 'DECLARAÇÃO DE FREQUÊNCIA'
+    nomeAluno = escaparHTML(data.nome)
+    cursoNome = escaparHTML(data.curso || '___________________________')
+    titulo = (documentos[tipoDeclaracao] || 'Declaração de Frequência').toUpperCase()
     conteudo  = `
       <p style="line-height: 2.2; text-align: justify;">
         Declaramos para os devidos fins que <strong>${nomeAluno}</strong>,
@@ -155,9 +185,21 @@ function imprimirDeclaracao() {
         Por ser verdade, firmamos a presente declaração.
       </p>
     `
+    if (tipoDeclaracao === 'historico') {
+      conteudo = `<p>Aluno(a): <strong>${nomeAluno}</strong></p><p>Curso: ${cursoNome}</p>
+        <p>Disciplina: ${escaparHTML(data.disciplina || 'Não informada')}</p>
+        <table style="width:100%;border-collapse:collapse" border="1" cellpadding="10">
+          <tr><th>Aulas registradas</th><th>Presenças</th><th>Faltas</th><th>Frequência</th></tr>
+          <tr><td>${Number(data.total_aulas)}</td><td>${Number(data.presentes)}</td><td>${Number(data.total_aulas) - Number(data.presentes)}</td><td>${Number(data.frequencia)}%</td></tr>
+        </table>`
+    }
   }
 
   const janela = window.open('', '_blank')
+  if (!janela) {
+    alert('Permita a abertura da janela de impressão para salvar o PDF.')
+    return
+  }
   janela.document.write(`
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -199,7 +241,12 @@ function imprimirDeclaracao() {
 
 // MODAL CERTIFICAÇÃO
 
-function abrirModalCertificacao() {
+function abrirModalCertificacao(tipo = 'certificado') {
+  tipoSolicitacao = tipo
+  document.getElementById('tituloSolicitacao').textContent = tipo === 'trancamento' ? 'Declaração de Trancamento' : 'Certificado de Conclusão'
+  document.getElementById('avisoSolicitacao').textContent = tipo === 'trancamento'
+    ? 'Comprova a suspensão temporária da matrícula. A solicitação deve ser analisada pela secretaria antes da emissão. O envio pelo sistema ainda não está disponível.'
+    : 'O certificado não pode ser emitido diretamente. É necessário registrar uma solicitação, que será verificada pelo setor responsável antes da emissão.'
   alunoSelecionadoCert = null
   document.getElementById('idAlunoCertInput').value = ''
   document.getElementById('obsCert').value          = ''
@@ -265,6 +312,11 @@ async function solicitarCertificacao() {
 
   erro.classList.add('hidden')
   sucesso.classList.add('hidden')
+  if (tipoSolicitacao === 'trancamento') {
+    erro.textContent = 'O envio de solicitações ainda não está integrado ao sistema. Entre em contato com a secretaria para solicitar a Declaração de Trancamento.'
+    erro.classList.remove('hidden')
+    return
+  }
 
   if (!alunoSelecionadoCert) {
     erro.textContent = 'Busque e selecione um aluno antes de continuar.'
