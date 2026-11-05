@@ -1,13 +1,19 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { fileURLToPath } from 'node:url'
 
 import { createClient } from '@supabase/supabase-js'
 
 import cursosRoutes from './routes/cursos.routes.js'
 import turmasRoutes from './routes/turmas.js'
 import alunosRoutes from './routes/alunos.routes.js'
+import ajudaRoutes from './routes/ajuda.routes.js'
 
+// Carrega o .env que fica ao lado deste arquivo (backend/src/.env), não importa
+// de qual pasta o servidor for iniciado. Depois chama o padrão (pasta atual),
+// que não sobrescreve nada já carregado.
+dotenv.config({ path: fileURLToPath(new URL('.env', import.meta.url)) })
 dotenv.config()
 
 const app = express()
@@ -31,6 +37,8 @@ const supabase = createClient(
 
 app.use(cursosRoutes)
 app.use(turmasRoutes)
+// Assistente de IA (a chave da Groq fica só aqui no servidor: GROQ_API_KEY no .env)
+app.use(ajudaRoutes)
 app.use(alunosRoutes)
 
 // =========================
